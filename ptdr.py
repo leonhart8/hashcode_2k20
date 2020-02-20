@@ -1,4 +1,10 @@
 import math
+from functools import cmp_to_key
+
+global res
+global S
+global ultra
+
 
 fd = open("a_example.txt",'r')
 
@@ -9,7 +15,9 @@ D = int(line[2]) #number of days
 
 line = fd.readline().split(' ')
 S = [int(e) for e in line]
-super = []
+
+
+ultra = dict()
 
 def compute_score(library, score_list):
     """
@@ -19,20 +27,96 @@ def compute_score(library, score_list):
     for book in library["books"]:
         total_score += S[book]
     return total_score / (library["signup"] + math.ceil(library["nbooks"] / library["bpd"]))
+    
+def cmp_score(x, y):
+    """
+    """
+    global S
+    if S[x] > S[y]:
+        return 1
+    elif S[x] == S[y]:
+        return 0
+    else:
+        return -1
 
+def signup_library(idlib, time):
+    """
+    Add library and all books to res
+    Remove added books from all libraries
+    Return : the signup of removed lib
+    """
+    global res
+
+    # remove from library pool
+    lib = ultra.pop(idlib)
+
+
+    # add lib and books to res
+    res["nlib"]+=1
+    res["idlib"].append(idlib)
+    nlivres = min((time-lib["signup"])*lib["bpd"], lib["nbooks"])
+
+    reslivres = []
+    for i in range(nlivres):
+        book = lib["books"][i]
+        reslivres.append(book)
+        
+        # remove books from pool/ from others libs
+        for lelelib in ultra.values():
+            if book in lelelib["books"]:
+                lelelib["nbooks"]-=1
+                lelelib["books"].remove(book)
+                lelelib["score"]=compute_score(ultra[id] ,S)
+    
+    res["books"].append(reslivres)
+
+    return lib["signup"]
+
+
+def cmp_library(lib1,lib2):
+    global S
+    if ultra[lib1]["score"] > ultra[lib2]["score"]:
+        return 1
+    elif ultra[lib1]["score"] == ultra[lib2]["score"]:
+        return 0
+    else:
+        return -1
 
 for i in range(L):
     #library
-    super.append(dict())
+    id = str(i)
+    ultra[id] = dict()
     line = fd.readline().split(' ')
-    super[i]["nbooks"] = int(line[0]) #number of books in library
-    super[i]["signup"] = int(line[1]) #number of days to finish signup
-    super[i]["bpd"] = int(line[2]) #number of books/day after sign up    
+    ultra[id]["nbooks"] = int(line[0]) #number of books in library
+    ultra[id]["signup"] = int(line[1]) #number of days to finish signup
+    ultra[id]["bpd"] = int(line[2]) #number of books/day after sign up    
     line = fd.readline().split(' ')
-    assert(len(line)==super[i]["nbooks"])
-    super[i]["books"] = [int(e) for e in line]
-    super[i]["score"] = compute_score(super[i] ,S)
+    assert(len(line)==ultra[id]["nbooks"])
+    ultra[id]["books"] = [int(e) for e in line]
+    ultra[id]["books"].sort(key=cmp_to_key(cmp_score))
+    ultra[id]["score"] = compute_score(ultra[id] ,S)
 
 fd.close()
 
-print(super)
+res = dict()
+res["nlib"] = 0
+res["idlib"] = []
+res["books"] = []
+
+while D > 0 and len(ultra)>0:
+    
+
+    #get best library according to luqmanoïd score
+    best = max(ultra,key=cmp_to_key(cmp_library))
+
+    #signup library -> add to res, with all books that can be sent before end
+    D-=signup_library(best,D)
+
+
+f = open('xptdres.txt','w')
+f.write(str(res["nlib"])+"\n")
+for i in range(res["nlib"]):
+    f.write(str(res["idlib"][i])+" "+str(len(res["books"][i]))+"\n")
+    f.write(" ".join([str(e) for e in res["books"][i]])+"\n")
+
+f.close()
