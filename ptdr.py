@@ -6,7 +6,7 @@ global S
 global ultra
 
 
-fd = open("a_example.txt",'r')
+fd = open("e_so_many_books.txt",'r')
 
 line = fd.readline().split(' ')
 B = int(line[0]) #number of books
@@ -27,7 +27,7 @@ def compute_score(library, score_list):
     for book in library["books"]:
         total_score += S[book]
     return total_score / (library["signup"] + math.ceil(library["nbooks"] / library["bpd"]))
-    
+
 def cmp_score(x, y):
     """
     """
@@ -50,24 +50,32 @@ def signup_library(idlib, time):
     # remove from library pool
     lib = ultra.pop(idlib)
 
-
     # add lib and books to res
+    nlivres = min((time-lib["signup"])*lib["bpd"], lib["nbooks"])
+
+    if nlivres<=0:
+        print("cheh")
+        return lib["signup"]
+
     res["nlib"]+=1
     res["idlib"].append(idlib)
-    nlivres = min((time-lib["signup"])*lib["bpd"], lib["nbooks"])
 
     reslivres = []
     for i in range(nlivres):
         book = lib["books"][i]
         reslivres.append(book)
-        
+
         # remove books from pool/ from others libs
-        for lelelib in ultra.values():
+        for lelelibid in ultra:
+            lelelib = ultra[lelelibid]
             if book in lelelib["books"]:
                 lelelib["nbooks"]-=1
+                if lelelib["nbooks"]==0:
+                    ultra.pop(lelelibid)
+                    continue
                 lelelib["books"].remove(book)
                 lelelib["score"]=compute_score(ultra[id] ,S)
-    
+
     res["books"].append(reslivres)
 
     return lib["signup"]
@@ -89,7 +97,7 @@ for i in range(L):
     line = fd.readline().split(' ')
     ultra[id]["nbooks"] = int(line[0]) #number of books in library
     ultra[id]["signup"] = int(line[1]) #number of days to finish signup
-    ultra[id]["bpd"] = int(line[2]) #number of books/day after sign up    
+    ultra[id]["bpd"] = int(line[2]) #number of books/day after sign up
     line = fd.readline().split(' ')
     assert(len(line)==ultra[id]["nbooks"])
     ultra[id]["books"] = [int(e) for e in line]
@@ -104,7 +112,7 @@ res["idlib"] = []
 res["books"] = []
 
 while D > 0 and len(ultra)>0:
-    
+    print(D)
 
     #get best library according to luqmanoïd score
     best = max(ultra,key=cmp_to_key(cmp_library))
