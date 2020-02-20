@@ -6,7 +6,7 @@ global S
 global ultra
 
 
-fd = open("e_so_many_books.txt",'r')
+fd = open("b_read_on.txt",'r')
 
 line = fd.readline().split(' ')
 B = int(line[0]) #number of books
@@ -66,16 +66,18 @@ def signup_library(idlib, time):
         reslivres.append(book)
 
         # remove books from pool/ from others libs
+        removed = []
         for lelelibid in ultra:
             lelelib = ultra[lelelibid]
             if book in lelelib["books"]:
                 lelelib["nbooks"]-=1
                 if lelelib["nbooks"]==0:
-                    ultra.pop(lelelibid)
+                    removed.append(lelelibid)
                     continue
                 lelelib["books"].remove(book)
-                lelelib["score"]=compute_score(ultra[id] ,S)
-
+                lelelib["score"]=compute_score(ultra[lelelibid] ,S)
+        for id in removed:
+            ultra.pop(id)
     res["books"].append(reslivres)
 
     return lib["signup"]
