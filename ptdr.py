@@ -1,12 +1,13 @@
 import math
 from functools import cmp_to_key
+import sys
 
 global res
 global S
 global ultra
 
 
-fd = open("b_read_on.txt",'r')
+fd = open(sys.argv[1],'r')
 
 line = fd.readline().split(' ')
 B = int(line[0]) #number of books
@@ -18,6 +19,7 @@ S = [int(e) for e in line]
 
 
 ultra = dict()
+
 
 def compute_score(library, score_list):
     """
@@ -123,7 +125,7 @@ while D > 0 and len(ultra)>0:
     D-=signup_library(best,D)
 
 
-f = open('xptdres.txt','w')
+f = open(sys.argv[2],'w')
 f.write(str(res["nlib"])+"\n")
 for i in range(res["nlib"]):
     f.write(str(res["idlib"][i])+" "+str(len(res["books"][i]))+"\n")
